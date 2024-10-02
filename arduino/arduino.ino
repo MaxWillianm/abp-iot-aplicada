@@ -145,6 +145,7 @@ void executaRotina()
     {
       if (getAltura() > alturaMaxima || getPeso() > pesoMaximo)
       {
+        Serial.println("DESC");
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("produto descartado");
@@ -155,6 +156,7 @@ void executaRotina()
       }
       else
       {
+        Serial.println("ACEIT");
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("produto aceito");

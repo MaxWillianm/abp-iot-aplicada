@@ -9,6 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- jQuery CDN -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen flex items-center gap-x-6 justify-center">
@@ -64,7 +65,7 @@
       </thead>
       <tbody id="msg">
         <tr>
-          <td class="border-2 px-4 py-2">15:15</td>
+          <td class="border-2 px-4 py-2">19:25</td>
           <td class="border-2 px-4 py-2">Produto 1</td>
         </tr>
       </tbody>
@@ -84,16 +85,18 @@
 
         if(event.data == "START"){
           $("#machineState").text("Ligada");
-          $("machineState").addClass("text-green-500");
+          $("#machineState").addClass("text-green-500");
         }else if(event.data == "STOP"){
           $("#machineState").text("Parada");
-          $("machineState").addClass("text-red-500");
+          $("#machineState").removeClass("text-green-500");
         } else if(event.data == "SETPESO") {
-          // adicionar uma linha na tabela com o peso selecionado
-            $("#msg").prepend("<tr><td class='border-2 px-4 py-2'>15:15</td><td class='border-2 px-4 py-2'>"+ event.data +"</td></tr>");
+            $("#msg").prepend("<tr><td class='border-2 px-4 py-2'>"+ moment().format('HH:mm') +"</td><td class='border-2 px-4 py-2'>Peso selecionado</td></tr>");
         } else if(event.data == "SETALT") {
-          // adicionar uma linha na tabela com a altura selecionada
-            $("#msg").prepend("<tr><td class='border-2 px-4 py-2'>15:15</td><td class='border-2 px-4 py-2'>"+ event.data +"</td></tr>");
+            $("#msg").prepend("<tr><td class='border-2 px-4 py-2'>"+ moment().format('HH:mm') +"</td><td class='border-2 px-4 py-2'>Altura selecionada</td></tr>");
+        } else if(event.data == "DESC") {
+            $("#msg").prepend("<tr><td class='border-2 px-4 py-2'>"+ moment().format('HH:mm') +"</td><td class='border-2 px-4 py-2'>Produto descartado</td></tr>");
+        } else if(event.data == "ACEIT"){
+            $("#msg").prepend("<tr><td class='border-2 px-4 py-2'>"+ moment().format('HH:mm') +"</td><td class='border-2 px-4 py-2'>Produto aceito</td></tr>");
         }
       };
 

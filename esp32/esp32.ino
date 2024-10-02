@@ -122,6 +122,12 @@ void loop() {
   } else if (receivedData.startsWith("STOP")) {
     receivedData = "";
     ws.textAll("STOP");
+  } else if(receivedData.startsWith("DESC")) {
+    receivedData = "";
+    ws.textAll("DESC");
+  } else if(receivedData.startsWith("ACEIT")) {
+    receivedData = "";
+    ws.textAll("ACEIT");
   }
 
   delay(500);
