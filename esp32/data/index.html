@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Selector</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center gap-x-6 justify-center">
+  <div class="w-full h-[495px] max-w-md bg-white shadow-md rounded-lg p-6">
+    <h1 class="text-2xl font-bold mb-4 text-center">Selecionador de Produtos</h1>
+
+    <!-- Seletor de Peso -->
+    <div class="mb-6">
+      <label for="weight" class="block text-gray-700 font-semibold mb-2">Selecione o Peso</label>
+      <div id="weight-options" class="flex space-x-4">
+        <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" data-weight="20">20g</button>
+        <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" data-weight="30">30g</button>
+        <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" data-weight="40">40g</button>
+      </div>
+      <div class="mt-4">
+        <button id="confirm-weight" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Confirmar Peso</button>
+      </div>
+    </div>
+
+    <!-- Seletor de Altura -->
+    <div class="mb-6">
+      <label for="height" class="block text-gray-700 font-semibold mb-2">Selecione a Altura</label>
+      <div id="height-options" class="flex space-x-4">
+        <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" data-height="3">3cm</button>
+        <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" data-height="5">5cm</button>
+        <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" data-height="7">7cm</button>
+      </div>
+      <div class="mt-4">
+        <button id="confirm-height" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Confirmar Altura</button>
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    <div id="selected-options" class="mt-6">
+      <h2 class="text-xl font-bold text-center">Opções Selecionadas</h2>
+      <p id="selected-weight" class="text-gray-700 mt-2 text-center">Peso: Nenhum</p>
+      <p id="selected-height" class="text-gray-700 mt-2 text-center">Altura: Nenhuma</p>
+    </div>
+  </div>
+  <div class="w-full h-[495px] max-w-md bg-white shadow-md rounded-lg p-6">
+    <h1 class="text-2xl font-bold mb-4 text-center">Dados da máquina</h1>
+    <p class="font-bold text-lg">Estado atual: <span class="text-red-500 uppercase" id="machineState">Esperando dados</span></p>
+    <button id="start" class="bg-green-500 text-white mt-4 px-12 py-2 rounded-md hover:bg-green-600">Ligar</button>
+    <button id="stop" class="bg-red-500 text-white mt-4 px-12 py-2 rounded-md hover:bg-red-600">Desligar</button>
+
+    <h2 class="text-xl font-bold mt-8">Logs: </h2>
+    <table class="table-auto w-full mt-3 overflow-hidden">
+      <thead class="bg-gray-300 border-2">
+        <tr>
+          <th class="border-2 border-gray-400 px-4 py-2">Data</th>
+          <th class="border-2 border-gray-400 px-4 py-2">ação</th>
+        </tr>
+      </thead>
+      <tbody id="msg">
+        <tr>
+          <td class="border-2 px-4 py-2">15:15</td>
+          <td class="border-2 px-4 py-2">Produto 1</td>
+        </tr>
+      </tbody>
+    </table>
+
+
+  <script>
+    $(document).ready(function() {
+      var ws = new WebSocket(`ws://${window.location.hostname}/ws`);
+
+      ws.onopen = function(event) {
+        console.log("Conectado ao WebSocket");
+      };
+
+      ws.onmessage = function(event) {
+        console.log(`Mensagem recebida: ${event.data}`);
+
+        if(event.data == "START"){
+          $("#machineState").text("Ligada");
+          $("machineState").addClass("text-green-500");
+        }else if(event.data == "STOP"){
+          $("#machineState").text("Parada");
+          $("machineState").addClass("text-red-500");
+        } else if(event.data == "SETPESO") {
+          // adicionar uma linha na tabela com o peso selecionado
+            $("#msg").prepend("<tr><td class='border-2 px-4 py-2'>15:15</td><td class='border-2 px-4 py-2'>"+ event.data +"</td></tr>");
+        } else if(event.data == "SETALT") {
+          // adicionar uma linha na tabela com a altura selecionada
+            $("#msg").prepend("<tr><td class='border-2 px-4 py-2'>15:15</td><td class='border-2 px-4 py-2'>"+ event.data +"</td></tr>");
+        }
+      };
+
+      // Variáveis para armazenar a seleção
+      var selectedWeight = null;
+      var selectedHeight = null;
+      var stateMachine = false;
+
+      // Capturar o clique nos botões de peso e armazenar a seleção
+      $('[data-weight]').on('click', function () {
+        if(stateMachine){
+          alert("Máquina ligada, não é possível alterar o peso");
+          return;
+        }
+        $('#weight-options button').removeClass('bg-blue-900').addClass('bg-blue-500');
+        $(this).removeClass('bg-blue-500').addClass('bg-blue-900');
+        selectedWeight = "PESO:" + $(this).data('weight');
+      });
+
+      // Capturar a confirmação do peso
+      $('#confirm-weight').on('click', function () {
+        if (selectedWeight) {
+          $('#selected-weight').text('Peso: ' + selectedWeight + 'g');
+          ws.send(selectedWeight);
+        }
+      });
+
+      // Capturar o clique nos botões de altura e armazenar a seleção
+      $('[data-height]').on('click', function () {
+        if(stateMachine){
+          alert("Máquina ligada, não é possível alterar a altura");
+          return;
+        }
+        $('#height-options button').removeClass('bg-blue-900').addClass('bg-blue-500');
+        $(this).removeClass('bg-blue-500').addClass('bg-blue-900');
+        selectedHeight = "ALT:" + $(this).data('height');
+      });
+
+      // Capturar a confirmação da altura
+      $('#confirm-height').on('click', function () {
+        if (selectedHeight) {
+          $('#selected-height').text('Altura: ' + selectedHeight + 'cm');
+          ws.send(selectedHeight);
+        }
+      });
+
+      // Ligar/Desligar a máquina
+      $('#start').on('click', function () {
+        if(selectedWeight != null && selectedHeight != null){
+          stateMachine = true;
+          ws.send('START');
+        } else {
+          alert("Selecione o peso e a altura");
+        }
+      });
+
+      $('#stop').on('click', function () {
+        stateMachine = false;
+        ws.send('STOP');
+      });
+
+
+    });
+  </script>
+</body>
+
+</html>
